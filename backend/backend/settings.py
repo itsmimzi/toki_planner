@@ -42,6 +42,14 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
 CORS_ALLOW_CREDENTIALS = True
 CSRF_COOKIE_HTTPONLY = False
 
+# Cross-origin cookie policy — required so the browser sends the session
+# cookie on cross-origin POST requests (Vercel → Fly.io).
+# SameSite=Lax (browser default) blocks cookies on cross-origin POST.
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE   = True   # required when SameSite=None
+CSRF_COOKIE_SAMESITE    = 'None'
+CSRF_COOKIE_SECURE      = True
+
 CSRF_TRUSTED_ORIGINS = os.environ.get(
     'CSRF_TRUSTED_ORIGINS',
     'http://localhost:3000'
