@@ -30,7 +30,8 @@ export const AuthProvider = ({ children }) => {
             fetchTasks();
             navigate('/homepage');
         }
-    },[isLoggedIn, username, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps, no-use-before-define
+    },[isLoggedIn, username, navigate, fetchTasks]);
 
     const getCsrfToken = () => {
         return Cookies.get('csrftoken');

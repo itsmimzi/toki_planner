@@ -13,8 +13,6 @@ const NavBar = () => {
     logOutUser,
     toggleLogin,
     toggleSignup,
-    modalLogin,
-    modalSignup,
   } = useAuth();
 
   const navLinkClass = ({ isActive }) =>
