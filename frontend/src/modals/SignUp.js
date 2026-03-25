@@ -6,7 +6,7 @@ import { useAuth } from '../components/AuthContext';
 const SignUp = () => {
   const { modalSignup, toggleSignup, signUpUser, loginError } = useAuth();
   const [formData, setFormData] = useState({ username: '', email: '', password1: '', password2: '' });
-  const [errors, setErrors]     = useState({});
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,22 +39,6 @@ const SignUp = () => {
     setFormData({ username: '', email: '', password1: '', password2: '' });
     setErrors({});
   };
-
-  const Field = ({ name, label, type = 'text', placeholder }) => (
-    <div>
-      <label className="field-label">{label}</label>
-      <input
-        type={type}
-        name={name}
-        className={`field ${errors[name] ? 'border-red-300 focus:border-red-400 focus:ring-red-100' : ''}`}
-        placeholder={placeholder}
-        value={formData[name]}
-        onChange={handleChange}
-        required
-      />
-      {errors[name] && <p className="text-xs text-red-500 mt-1">{errors[name]}</p>}
-    </div>
-  );
 
   return (
     <Transition show={modalSignup} as={Fragment}>
@@ -93,10 +77,61 @@ const SignUp = () => {
               )}
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <Field name="username"  label="Username"         placeholder="yourname" />
-                <Field name="email"     label="Email"            type="email"    placeholder="you@example.com" />
-                <Field name="password1" label="Password"         type="password" placeholder="••••••••" />
-                <Field name="password2" label="Confirm password" type="password" placeholder="••••••••" />
+                <div>
+                  <label className="field-label">Username</label>
+                  <input
+                    type="text"
+                    name="username"
+                    className={`field ${errors.username ? 'border-red-300' : ''}`}
+                    placeholder="yourname"
+                    value={formData.username}
+                    onChange={handleChange}
+                    required
+                  />
+                  {errors.username && <p className="text-xs text-red-500 mt-1">{errors.username}</p>}
+                </div>
+
+                <div>
+                  <label className="field-label">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    className={`field ${errors.email ? 'border-red-300' : ''}`}
+                    placeholder="you@example.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
+                  {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
+                </div>
+
+                <div>
+                  <label className="field-label">Password</label>
+                  <input
+                    type="password"
+                    name="password1"
+                    className={`field ${errors.password1 ? 'border-red-300' : ''}`}
+                    placeholder="••••••••"
+                    value={formData.password1}
+                    onChange={handleChange}
+                    required
+                  />
+                  {errors.password1 && <p className="text-xs text-red-500 mt-1">{errors.password1}</p>}
+                </div>
+
+                <div>
+                  <label className="field-label">Confirm password</label>
+                  <input
+                    type="password"
+                    name="password2"
+                    className={`field ${errors.password2 ? 'border-red-300' : ''}`}
+                    placeholder="••••••••"
+                    value={formData.password2}
+                    onChange={handleChange}
+                    required
+                  />
+                  {errors.password2 && <p className="text-xs text-red-500 mt-1">{errors.password2}</p>}
+                </div>
 
                 <div className="bg-gray-50 rounded-lg px-4 py-3 text-xs text-gray-500">
                   Password must be 8–100 characters and include uppercase, lowercase, a number, and a special character (.@$!%*#?)
