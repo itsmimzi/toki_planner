@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { useAuth } from './AuthContext';
-import LogIn from '../modals/LogIn';
-import SignUp from '../modals/SignUp';
 
 const NavBar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -83,8 +81,6 @@ const NavBar = () => {
         </div>
       )}
 
-      <LogIn />
-      <SignUp />
     </>
   );
 };

@@ -11,6 +11,8 @@ import { AuthProvider } from './components/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import LogIn from './modals/LogIn';
+import SignUp from './modals/SignUp';
 import Home from './pages/Home';
 import AboutUs from './pages/AboutUs';
 import Pricing from './pages/Pricing';
@@ -27,16 +29,19 @@ function App() {
             <Header />
             <main className="flex-1">
               <Routes>
-                <Route path="/"          element={<Home />} />
-                <Route path="/home"      element={<Home />} />
-                <Route path="/homepage"  element={<PrivateRoute><HomePage /></PrivateRoute>} />
-                <Route path="/about-us"  element={<AboutUs />} />
-                <Route path="/pricing"   element={<Pricing />} />
+                <Route path="/"           element={<Home />} />
+                <Route path="/home"       element={<Home />} />
+                <Route path="/homepage"   element={<PrivateRoute><HomePage /></PrivateRoute>} />
+                <Route path="/about-us"   element={<AboutUs />} />
+                <Route path="/pricing"    element={<Pricing />} />
                 <Route path="/contact-us" element={<Contact />} />
-                <Route path="*"          element={<NotFound />} />
+                <Route path="*"           element={<NotFound />} />
               </Routes>
             </main>
             <Footer />
+            {/* Modals at root level — prevents remount on NavBar re-renders */}
+            <LogIn />
+            <SignUp />
           </div>
         </AuthProvider>
       </LocalizationProvider>
