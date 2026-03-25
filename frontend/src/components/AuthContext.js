@@ -23,16 +23,6 @@ export const AuthProvider = ({ children }) => {
     const [modalLogin, setModalLogin] = useState(false);
     const [modalSignup, setModalSignup] = useState(false);
 
-    useEffect(() => {
-        localStorage.setItem("isLoggedIn", isLoggedIn);
-        localStorage.setItem("username", username);
-        if (isLoggedIn) {
-            fetchTasks();
-            navigate('/homepage');
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps, no-use-before-define
-    },[isLoggedIn, username, navigate, fetchTasks]);
-
     const getCsrfToken = () => {
         return Cookies.get('csrftoken');
     };
@@ -213,7 +203,7 @@ export const AuthProvider = ({ children }) => {
                 const fetchedTasks = response.data.map(task => ({
                     ...task,
                     id : task.task_id,
-                    isComplete: task.isComplete,  
+                    isComplete: task.isComplete,
                 }));
                 setTasks(fetchedTasks);
             } else {
@@ -224,6 +214,15 @@ export const AuthProvider = ({ children }) => {
             setAlert({ show: true, message: error.message, type: 'danger' });
         }
     },[]);
+
+    useEffect(() => {
+        localStorage.setItem("isLoggedIn", isLoggedIn);
+        localStorage.setItem("username", username);
+        if (isLoggedIn) {
+            fetchTasks();
+            navigate('/homepage');
+        }
+    },[isLoggedIn, username, navigate, fetchTasks]);
 
     const updateTaskList = (updatedTasks) => {
         setTasks(updatedTasks);
