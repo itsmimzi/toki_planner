@@ -112,10 +112,10 @@ const Card = ({ taskObj, deleteTask, updateTask, onSelect }) => {
           {!taskObj.isComplete && (
             <button
               onClick={handlePredict}
-              title="AI prediction"
-              className="p-1.5 text-gray-400 hover:text-toki-teal hover:bg-gray-100 rounded-lg transition-colors"
+              className="ml-1 flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-toki-green-light text-toki-teal hover:bg-toki-green hover:text-white transition-colors"
             >
-              <Sparkles size={13} />
+              <Sparkles size={12} />
+              Prédire
             </button>
           )}
           <button

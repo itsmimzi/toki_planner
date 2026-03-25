@@ -272,7 +272,7 @@ const HomePage = () => {
         </main>
       </div>
 
-      <CreateTask isOpen={isCreateOpen} toggle={() => setCreateOpen(false)} createTask={createTask} fetchTasks={fetchTasks} />
+      <CreateTask isOpen={isCreateOpen} toggle={() => setCreateOpen(false)} createTask={createTask} />
       <EditTask   isOpen={isEditOpen}   toggle={() => setEditOpen(false)}   taskObj={selectedTask} />
     </>
   );

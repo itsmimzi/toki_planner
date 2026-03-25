@@ -7,7 +7,7 @@ import axios from 'axios';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
-const CreateTask = ({ isOpen, toggle, createTask, fetchTasks }) => {
+const CreateTask = ({ isOpen, toggle, createTask }) => {
   const [taskData, setTaskData] = useState({
     title: '', description: '', category: '', priority: '',
     start_time: new Date().toISOString(), duration: 15, url: '', address: '',
@@ -55,7 +55,8 @@ const CreateTask = ({ isOpen, toggle, createTask, fetchTasks }) => {
     if (success) {
       toggle();
       resetForm();
-      fetchTasks();
+      // fetchTasks is not needed — createTask already adds the task
+      // optimistically to state in AuthContext via setTasks
     }
   };
 
