@@ -65,6 +65,9 @@ const CreateTask = ({ isOpen, toggle, createTask, fetchTasks }) => {
     setErrors({});
   };
 
+  // Reset whenever the modal closes
+  useEffect(() => { if (!isOpen) resetForm(); }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const close = () => { toggle(); resetForm(); };
 
   return (

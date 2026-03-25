@@ -1,12 +1,14 @@
 import React, { useState, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { X, UserPlus } from 'lucide-react';
+import { X, UserPlus, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../components/AuthContext';
 
 const SignUp = () => {
   const { modalSignup, toggleSignup, signUpUser, loginError } = useAuth();
   const [formData, setFormData] = useState({ username: '', email: '', password1: '', password2: '' });
   const [errors, setErrors] = useState({});
+  const [showPass1, setShowPass1] = useState(false);
+  const [showPass2, setShowPass2] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -107,29 +109,49 @@ const SignUp = () => {
 
                 <div>
                   <label className="field-label">Password</label>
-                  <input
-                    type="password"
-                    name="password1"
-                    className={`field ${errors.password1 ? 'border-red-300' : ''}`}
-                    placeholder="••••••••"
-                    value={formData.password1}
-                    onChange={handleChange}
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPass1 ? 'text' : 'password'}
+                      name="password1"
+                      className={`field pr-10 ${errors.password1 ? 'border-red-300' : ''}`}
+                      placeholder="••••••••"
+                      value={formData.password1}
+                      onChange={handleChange}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPass1(p => !p)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showPass1 ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
                   {errors.password1 && <p className="text-xs text-red-500 mt-1">{errors.password1}</p>}
                 </div>
 
                 <div>
                   <label className="field-label">Confirm password</label>
-                  <input
-                    type="password"
-                    name="password2"
-                    className={`field ${errors.password2 ? 'border-red-300' : ''}`}
-                    placeholder="••••••••"
-                    value={formData.password2}
-                    onChange={handleChange}
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPass2 ? 'text' : 'password'}
+                      name="password2"
+                      className={`field pr-10 ${errors.password2 ? 'border-red-300' : ''}`}
+                      placeholder="••••••••"
+                      value={formData.password2}
+                      onChange={handleChange}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPass2(p => !p)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showPass2 ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
                   {errors.password2 && <p className="text-xs text-red-500 mt-1">{errors.password2}</p>}
                 </div>
 

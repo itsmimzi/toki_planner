@@ -2,6 +2,7 @@ import React, {createContext, useContext, useState, useEffect, useCallback } fro
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import { toast } from 'react-toastify';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
@@ -74,6 +75,7 @@ export const AuthProvider = ({ children }) => {
                 setUsername(userData.username);
                 setModalSignup(false);
                 setLoginError('');
+                toast.success(`Welcome to Toki, ${userData.username}! 🎉`);
                 return true;
             } else {
                 throw new Error('Failed to sign up.');

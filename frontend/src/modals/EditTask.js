@@ -55,7 +55,11 @@ const EditTask = ({ isOpen, toggle, taskObj }) => {
     }
   };
 
-  const close = () => toggle();
+  // Clear stale data when modal closes
+  const close = () => {
+    toggle();
+    setTaskData({ title: '', description: '', category: '', priority: '', start_time: new Date().toISOString(), duration: 15, url: '', address: '' });
+  };
 
   if (!taskObj) return null;
 

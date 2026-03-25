@@ -1,12 +1,13 @@
 import React, { useState, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { X, LogIn as LogInIcon } from 'lucide-react';
+import { X, LogIn as LogInIcon, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../components/AuthContext';
 
 const LogIn = () => {
   const { modalLogin, toggleLogin, loginError, logInUser } = useAuth();
-  const [email, setEmail]       = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail]         = useState('');
+  const [password, setPassword]   = useState('');
+  const [showPass, setShowPass]   = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,12 +18,12 @@ const LogIn = () => {
     toggleLogin();
     setEmail('');
     setPassword('');
+    setShowPass(false);
   };
 
   return (
     <Transition show={modalLogin} as={Fragment}>
       <Dialog onClose={close} className="relative z-50">
-        {/* Backdrop */}
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-200" enterFrom="opacity-0" enterTo="opacity-100"
@@ -31,7 +32,6 @@ const LogIn = () => {
           <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
         </Transition.Child>
 
-        {/* Panel */}
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Transition.Child
             as={Fragment}
@@ -70,17 +70,29 @@ const LogIn = () => {
                     required
                   />
                 </div>
+
                 <div>
                   <label className="field-label">Password</label>
-                  <input
-                    type="password"
-                    className="field"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPass ? 'text' : 'password'}
+                      className="field pr-10"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPass(p => !p)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
                 </div>
+
                 <button type="submit" className="btn-primary justify-center py-3 mt-1">
                   Continue
                 </button>
