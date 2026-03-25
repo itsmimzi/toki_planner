@@ -1,183 +1,190 @@
-import React, { useState, useEffect }  from "react";
-import { Button, Modal, ModalBody, ModalFooter } from "reactstrap";
-import BasicDateTimePicker from "../components/BasicDateTimePicker";
+import React, { useState, useEffect, Fragment } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { X, Plus } from 'lucide-react';
+import BasicDateTimePicker from '../components/BasicDateTimePicker';
 import dayjs from 'dayjs';
-import axios from "axios";
+import axios from 'axios';
 
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 const CreateTask = ({ isOpen, toggle, createTask, fetchTasks }) => {
-    const [taskData, setTaskData] = useState({
-      title : '',
-      description: '',
-      category: '',
-      priority: '',
-      start_time: new Date().toISOString(),
-      duration: 15,
-      url: '',
-      address: '',
-    });
-    const [errors, setErrors] = useState({});
-    const [categories, setCategories] = useState([]);
-    const [priorities, setPriorities] = useState([]);
+  const [taskData, setTaskData] = useState({
+    title: '', description: '', category: '', priority: '',
+    start_time: new Date().toISOString(), duration: 15, url: '', address: '',
+  });
+  const [errors, setErrors]         = useState({});
+  const [categories, setCategories] = useState([]);
+  const [priorities, setPriorities] = useState([]);
 
-    useEffect(() => {
-      if (!isOpen) return;
-
-      const fetchData = async () => {
-        try {
-          const catResponse = await axios.get('http://localhost:8000/api/categories/');
-          const priResponse = await axios.get('http://localhost:8000/api/priorities/');
-          setCategories(catResponse.data);
-          setPriorities(priResponse.data);
-        } catch(error){
-          console.error("Failed to fetch categories or priorities:", error);
-        }
-      };
-      fetchData();
-      // axios.get('http://localhost:8000/api/categories/').then(res => {
-      //     setCategories(res.data);
-      // });
-      // axios.get('http://localhost:8000/api/priorities/').then(res => {
-      //     setPriorities(res.data);
-      // });
-    }, [isOpen]);
-
-    const handleChange = (e) => {
-      const { name, value } = e.target;
-      setTaskData({ ...taskData, [name]: value });
-    };
-
-    const handleDateChange = (date) => {
-      setTaskData({ ...taskData, start_time: date });
-    };
-  
-    const handleDurationChange = (durationMinutes) => {
-      setTaskData({ ...taskData, duration: durationMinutes });
-      console.log("New Duration:", durationMinutes); // Just for checking
-    };
-
-    const handleAdd = async (e) => {
-      e.preventDefault();
-      if(validateForm()) {
-        const success = await createTask(taskData);          
-        if(success){
-          toggle();
-          resetFormState();
-          fetchTasks();
-        } else {
-          alert('Please correct errors in form.');
-        }
+  useEffect(() => {
+    if (!isOpen) return;
+    const fetchOptions = async () => {
+      try {
+        const [catRes, priRes] = await Promise.all([
+          axios.get(`${API_BASE}/api/categories/`),
+          axios.get(`${API_BASE}/api/priorities/`),
+        ]);
+        setCategories(catRes.data);
+        setPriorities(priRes.data);
+      } catch (err) {
+        console.error('Failed to fetch options:', err);
       }
     };
-    
-    const validateForm = () => {
-      let errors = {};
-      let isValid = true;
+    fetchOptions();
+  }, [isOpen]);
 
-      if(!taskData.title.trim()) {
-          errors['title'] = "Title cannot be empty";
-          isValid = false;
-      }
-      if(!taskData.category) {
-          errors['category'] = "Please select a category";
-          isValid = false;
-      }
-      if(!taskData.priority) {
-          errors['priority'] = "Please select a priority";
-          isValid = false;
-      }
-      if(!taskData.start_time) {
-          errors['start_time'] = "Please select a start time";
-          isValid = false;
-      }
-      setErrors(errors);
-      return isValid;
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setTaskData(p => ({ ...p, [name]: value }));
+  };
+
+  const validate = () => {
+    const e = {};
+    if (!taskData.title.trim())  e.title    = 'Title is required';
+    if (!taskData.category)      e.category = 'Please select a category';
+    if (!taskData.priority)      e.priority = 'Please select a priority';
+    if (!taskData.start_time)    e.start_time = 'Please select a start time';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+    const success = await createTask(taskData);
+    if (success) {
+      toggle();
+      resetForm();
+      fetchTasks();
     }
+  };
 
-    const resetFormState = () => {
-      setTaskData({
-        title :'',
-        description: '',
-        category: '',
-        priority: '',
-        start_time: new Date().toISOString(),
-        duration: 15,
-        url: '',
-        address: '',  
-      });
-      setErrors({});
-    };
+  const resetForm = () => {
+    setTaskData({ title: '', description: '', category: '', priority: '',
+      start_time: new Date().toISOString(), duration: 15, url: '', address: '' });
+    setErrors({});
+  };
 
-    const closeModal = () => {
-      toggle(); 
-      resetFormState();
-    };
+  const close = () => { toggle(); resetForm(); };
 
-    return (
-        <Modal isOpen={isOpen} toggle={closeModal} >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem' }}>
-            <h5>New Task</h5>
-            <div className="form-group" >
-                        <select 
-                          className = "form-control" 
-                          style={{width : "auto"}} 
-                          value={taskData.category.label} 
-                          onChange = {handleChange} 
-                          name ="category" required>
-                              <option value="">Select Category</option>
-                              {categories.map(cat => (
-                              <option key={cat.id} value={cat.id}>{cat.label}</option>
-                              ))}
-                        </select>
-                        {errors.category && <div className="text-danger">{errors.category}</div>}
+  return (
+    <Transition show={isOpen} as={Fragment}>
+      <Dialog onClose={close} className="relative z-50">
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-200" enterFrom="opacity-0" enterTo="opacity-100"
+          leave="ease-in duration-150"  leaveFrom="opacity-100" leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
+        </Transition.Child>
+
+        <div className="fixed inset-0 flex items-center justify-center p-4 overflow-y-auto">
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-200" enterFrom="opacity-0 scale-95 translate-y-2" enterTo="opacity-100 scale-100 translate-y-0"
+            leave="ease-in duration-150"  leaveFrom="opacity-100 scale-100 translate-y-0" leaveTo="opacity-0 scale-95 translate-y-2"
+          >
+            <Dialog.Panel className="w-full max-w-lg bg-white rounded-2xl shadow-modal relative my-8">
+              {/* Header */}
+              <div className="flex items-center justify-between px-7 py-5 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-7 h-7 bg-toki-green-light rounded-lg flex items-center justify-center">
+                    <Plus size={14} className="text-toki-green" />
+                  </div>
+                  <Dialog.Title className="text-base font-semibold text-gray-900">New task</Dialog.Title>
+                </div>
+                <button onClick={close} className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                  <X size={16} />
+                </button>
               </div>
-              <div className="form-group" >
-                        <select 
-                          className = "form-control" 
-                          style={{width : "auto"}} 
-                          value={taskData.priority.label} 
-                          onChange = {handleChange} 
-                          name ="priority" 
-                          required>
-                              <option value="">Set priority</option>
-                              {priorities.map(pri => (
-                                  <option key={pri.id} value={pri.id}>{pri.label}</option>
-                              ))}
-                        </select>
-                        {errors.priority && <div className="text-danger">{errors.priority}</div>}
-              </div>
-            </div>
-            <ModalBody>
-                    <div className = "form-group">
-                        <label>Title</label>
-                        <input type="text" className = "form-control" value = {taskData.title} onChange = {handleChange} name = "title" required/>
-                        {errors.title && <div className="text-danger">{errors.title}</div>}
+
+              <form onSubmit={handleAdd}>
+                <div className="px-7 py-6 flex flex-col gap-5">
+
+                  {/* Title */}
+                  <div>
+                    <label className="field-label">Title <span className="text-red-400">*</span></label>
+                    <input
+                      type="text"
+                      name="title"
+                      className={`field ${errors.title ? 'border-red-300' : ''}`}
+                      placeholder="What needs to get done?"
+                      value={taskData.title}
+                      onChange={handleChange}
+                      required
+                    />
+                    {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
+                  </div>
+
+                  {/* Category + Priority row */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="field-label">Category <span className="text-red-400">*</span></label>
+                      <select name="category" className={`field ${errors.category ? 'border-red-300' : ''}`} value={taskData.category} onChange={handleChange} required>
+                        <option value="">Select…</option>
+                        {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                      </select>
+                      {errors.category && <p className="text-xs text-red-500 mt-1">{errors.category}</p>}
                     </div>
-                    <div className = "form-group mt-2">
-                        <textarea rows = "5" className = "form-control" value = {taskData.description} onChange = {handleChange} name = "description"></textarea>
+                    <div>
+                      <label className="field-label">Priority <span className="text-red-400">*</span></label>
+                      <select name="priority" className={`field ${errors.priority ? 'border-red-300' : ''}`} value={taskData.priority} onChange={handleChange} required>
+                        <option value="">Select…</option>
+                        {priorities.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+                      </select>
+                      {errors.priority && <p className="text-xs text-red-500 mt-1">{errors.priority}</p>}
                     </div>
-                    <div className="form-group mt-5">
-                        <label>Schedule</label>
-                          <BasicDateTimePicker 
-                              selectedDate={dayjs(taskData.start_time ? new Date(taskData.start_time) : new Date())} 
-                              onDateTimeChange={handleDateChange}
-                              onDurationChange={handleDurationChange}
-                          />
-                          {errors.start_time && <div className="text-danger">{errors.start_time}</div>}
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <label className="field-label">Description <span className="text-gray-300">(optional)</span></label>
+                    <textarea
+                      name="description"
+                      rows={3}
+                      className="field resize-none"
+                      placeholder="Add notes…"
+                      value={taskData.description}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* Schedule */}
+                  <div>
+                    <label className="field-label">Schedule <span className="text-red-400">*</span></label>
+                    <BasicDateTimePicker
+                      selectedDate={dayjs(taskData.start_time ? new Date(taskData.start_time) : new Date())}
+                      onDateTimeChange={d => setTaskData(p => ({ ...p, start_time: d }))}
+                      onDurationChange={d => setTaskData(p => ({ ...p, duration: d }))}
+                    />
+                    {errors.start_time && <p className="text-xs text-red-500 mt-1">{errors.start_time}</p>}
+                  </div>
+
+                  {/* URL + Address */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="field-label">URL <span className="text-gray-300">(optional)</span></label>
+                      <input name="url" type="url" className="field" placeholder="https://…" value={taskData.url} onChange={handleChange} />
                     </div>
-                    <div className = "form-group mt-2">
-                        <input className = "form-control" placeholder = "URL..." value = {taskData.url} onChange = {handleChange} name = "url"/>
+                    <div>
+                      <label className="field-label">Address <span className="text-gray-300">(optional)</span></label>
+                      <input name="address" className="field" placeholder="Location…" value={taskData.address} onChange={handleChange} />
                     </div>
-                    <div className = "form-group mt-2">
-                        <input className = "form-control" placeholder = "Address..." value = {taskData.address} onChange = {handleChange} name = "address"/>
-                    </div>
-            </ModalBody>
-            <ModalFooter>
-              <Button color="primary" onClick={handleAdd}>Create</Button>{' '}
-              <Button color="secondary" onClick={toggle}>Cancel</Button>
-            </ModalFooter>
-      </Modal>
-    );
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="px-7 py-4 border-t border-gray-100 flex items-center justify-end gap-3">
+                  <button type="button" onClick={close} className="btn-ghost">Cancel</button>
+                  <button type="submit" className="btn-primary">Create task</button>
+                </div>
+              </form>
+            </Dialog.Panel>
+          </Transition.Child>
+        </div>
+      </Dialog>
+    </Transition>
+  );
 };
 
 export default CreateTask;

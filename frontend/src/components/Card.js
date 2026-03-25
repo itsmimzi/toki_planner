@@ -1,98 +1,134 @@
-import React, { useState } from "react";
-import EditTask from "../modals/EditTask";
-import dayjs from 'dayjs'; 
-import { Button } from "react-bootstrap";
+import React from 'react';
+import { Pencil, CheckCircle, Sparkles, Trash2, ExternalLink, MapPin, FileText } from 'lucide-react';
+import dayjs from 'dayjs';
 import { toast } from 'react-toastify';
+import { useAuth } from './AuthContext';
 
-const Card = ({ taskObj, index, deleteTask, updateTask, predictTask, onSelect }) => {
-  const [modal, setModal] = useState(false);
+const PRIORITY_STYLES = {
+  ASAP:   { bar: 'bg-red-500',   badge: 'badge-red',   label: 'ASAP' },
+  high:   { bar: 'bg-amber-400', badge: 'badge-amber',  label: 'High' },
+  medium: { bar: 'bg-blue-400',  badge: 'badge-blue',   label: 'Medium' },
+  low:    { bar: 'bg-gray-300',  badge: 'badge-gray',   label: 'Low' },
+};
 
-  const toggle = () => {
-    setModal(!modal);
-  };
+const Card = ({ taskObj, deleteTask, updateTask, onSelect }) => {
+  const { predictTask } = useAuth();
 
-  const handleDelete = async (e) => {
-    e.preventDefault();
-    if (window.confirm("Are you sure you want to delete this task?")) {
-      deleteTask(taskObj.id);
-    }
-  };
+  const priorityKey   = taskObj.priority?.label || 'low';
+  const priorityStyle = PRIORITY_STYLES[priorityKey] || PRIORITY_STYLES.low;
+  const categoryLabel = taskObj.category?.label || '—';
+  const formattedTime = taskObj.start_time
+    ? dayjs(taskObj.start_time).format('MMM D [·] HH:mm')
+    : '—';
 
-  const handleIsComplete = async () => {
-    const updatedTask = {
+  const handleComplete = async () => {
+    const success = await updateTask({
       ...taskObj,
       isComplete: true,
-      end_time: new Date().toISOString()
-    };
-    const success = await updateTask(updatedTask);
-    if (success) {
-      console.log("Task marked as complete and updated.");
-      toast.info("good job !", { autoClose: 10000 });
-    } else {
-      alert("Failed to mark task as complete.");
-    }
-  }
-
-  const handlePredict = async () => {
-      const taskData = {
-          task_type: taskObj.category ? taskObj.category.label : '',
-          day_of_week: taskObj.day_of_week,
-          has_description: taskObj.hasDescription,
-          has_address: taskObj.hasAddress,
-          has_url: taskObj.hasUrl,
-          is_complete: taskObj.isComplete,
-          start_time: taskObj.start_time,
-      };
-
-      const predictionData = await predictTask(taskData);
-      if (predictionData) {
-          toast.info(`Durée estimée : ~${predictionData.duration} min | Priorité suggérée : ${predictionData.priority}`, { autoClose: 8000 });
-      }
+      end_time: new Date().toISOString(),
+    });
+    if (success) toast.success('Well done! Task completed.');
   };
 
+  const handleDelete = (e) => {
+    e.preventDefault();
+    if (window.confirm('Delete this task?')) deleteTask(taskObj.id);
+  };
 
-
-  const categoryLabel = taskObj.category ? taskObj.category.label : "N/A";
-  const priorityLabel = taskObj.priority ? taskObj.priority.label : "N/A";
-  const formattedStartTime = taskObj.start_time ? dayjs(taskObj.start_time).format('MM/DD/YYYY [at] HH:mm') : 'N/A';
+  const handlePredict = async () => {
+    const taskData = {
+      task_type:       taskObj.category?.label || '',
+      day_of_week:     taskObj.day_of_week,
+      has_description: !!taskObj.description,
+      has_address:     !!taskObj.address,
+      has_url:         !!taskObj.url,
+      is_complete:     taskObj.isComplete,
+      start_time:      taskObj.start_time,
+    };
+    const result = await predictTask(taskData);
+    if (result) {
+      toast.info(`~${result.duration} min · ${result.priority} priority`, { autoClose: 8000 });
+    }
+  };
 
   return (
-      <div className="card-wrapper mr-5">
-        <div className="card-top-label">
-          <div className="task-category">{categoryLabel}</div>
-          <div className="task-start-time">{formattedStartTime}</div>
-          <div className="task-priority">{priorityLabel}</div>        
+    <div className={`task-card relative overflow-hidden group ${taskObj.isComplete ? 'opacity-60' : ''}`}>
+      {/* Priority indicator bar */}
+      <div className={`absolute left-0 top-0 bottom-0 w-1 ${priorityStyle.bar}`} />
+
+      <div className="pl-5 pr-5 pt-4 pb-4">
+        {/* Top meta row */}
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
+          <span className="badge badge-green text-xs">{categoryLabel}</span>
+          <span className="badge badge-gray text-xs">{formattedTime}</span>
+          <span className={`badge ${priorityStyle.badge} text-xs ml-auto`}>{priorityStyle.label}</span>
         </div>
-        <div className="task-holder">
-          <div className="task-header">
-              <div className="task-title"> 
-                  {taskObj.title}
-              </div>
-          </div>
-          <div className="task-body">
-            <div className=" task-detail ">{taskObj.description ? taskObj.description : <input className=" task-detail-none "   placeholder="edit task to ask description" disabled/>}</div>
-            <div className=" task-detail ">{taskObj.url ? <a href={taskObj.url}>{taskObj.url}</a> : <input className=" task-detail-none "  placeholder=" edit task to add a url" disabled />}</div>
-            <div className=" task-detail ">{taskObj.address ? taskObj.address : <input className=" task-detail-none "  placeholder="edit task to add address" disabled/>}</div>
-          </div>
-          <div className="task-footer">
-            <Button variant="dark" size="sm" onClick={() => onSelect(taskObj)}>update</Button>{''}
-            {!taskObj.isComplete && (
-              <Button variant="success" size="sm" onClick={handleIsComplete}>complete</Button>
-            )}
-            {!taskObj.isComplete && (
-              <Button variant="secondary" size="sm" onClick={handlePredict}>plan</Button>
-            )}
-            <Button variant="danger" size="sm" onClick={handleDelete}>delete</Button>{''}
-          </div>
+
+        {/* Title */}
+        <h3 className={`text-sm font-semibold text-gray-900 mb-2 leading-snug ${taskObj.isComplete ? 'line-through text-gray-400' : ''}`}>
+          {taskObj.title}
+        </h3>
+
+        {/* Optional details */}
+        <div className="flex flex-col gap-1.5">
+          {taskObj.description && (
+            <p className="text-xs text-gray-500 flex items-start gap-1.5 line-clamp-2">
+              <FileText size={12} className="flex-shrink-0 mt-0.5 text-gray-400" />
+              {taskObj.description}
+            </p>
+          )}
+          {taskObj.url && (
+            <a href={taskObj.url} target="_blank" rel="noreferrer" className="text-xs text-toki-green flex items-center gap-1.5 hover:underline">
+              <ExternalLink size={12} className="flex-shrink-0" />
+              {taskObj.url.replace(/^https?:\/\//, '').slice(0, 40)}
+            </a>
+          )}
+          {taskObj.address && (
+            <p className="text-xs text-gray-500 flex items-center gap-1.5">
+              <MapPin size={12} className="flex-shrink-0 text-gray-400" />
+              {taskObj.address}
+            </p>
+          )}
         </div>
-        {modal && (
-          < EditTask
-              isOpen={modal}
-              toggle={toggle}
-              taskObj={taskObj}
-          />
-        )}
+
+        {/* Action row */}
+        <div className="flex items-center gap-1.5 mt-4 pt-3 border-t border-gray-50">
+          <button
+            onClick={() => onSelect(taskObj)}
+            title="Edit"
+            className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <Pencil size={13} />
+          </button>
+          {!taskObj.isComplete && (
+            <button
+              onClick={handleComplete}
+              title="Mark complete"
+              className="p-1.5 text-gray-400 hover:text-toki-green hover:bg-toki-green-light rounded-lg transition-colors"
+            >
+              <CheckCircle size={13} />
+            </button>
+          )}
+          {!taskObj.isComplete && (
+            <button
+              onClick={handlePredict}
+              title="AI prediction"
+              className="p-1.5 text-gray-400 hover:text-toki-teal hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <Sparkles size={13} />
+            </button>
+          )}
+          <button
+            onClick={handleDelete}
+            title="Delete"
+            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors ml-auto"
+          >
+            <Trash2 size={13} />
+          </button>
+        </div>
       </div>
-    );
+    </div>
+  );
 };
+
 export default Card;

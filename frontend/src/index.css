@@ -1,21 +1,53 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased !important;
-  -moz-osx-font-smoothing: grayscale;
-  font-size: 1rem;
-  line-height: 1.5;
-  color: var(--black);
-  min-height: 100%;
-  color: #333;
-  background-color: #fff;
-  box-sizing: border-box;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  body { font-size: 15px; line-height: 1.6; }
+  h1,h2,h3,h4,h5,h6 { line-height: 1.25; }
+  a { text-decoration: none; }
 }
 
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+@layer components {
+  .btn-primary  { @apply inline-flex items-center gap-2 px-5 py-2.5 bg-toki-green text-white text-sm font-medium rounded-lg hover:bg-toki-green-dark transition-colors duration-150 cursor-pointer; }
+  .btn-ghost    { @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-150 cursor-pointer; }
+  .btn-outline  { @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-200 text-gray-700 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors duration-150 cursor-pointer; }
+  .field        { @apply w-full px-3 py-2.5 text-sm text-gray-900 bg-white border border-gray-200 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-toki-green/20 focus:border-toki-green transition-colors duration-150; }
+  .field-label  { @apply block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5; }
+  .badge        { @apply inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium; }
+  .badge-green  { @apply bg-toki-green-light text-toki-teal; }
+  .badge-gray   { @apply bg-gray-100 text-gray-500; }
+  .badge-red    { @apply bg-red-50 text-red-600; }
+  .badge-amber  { @apply bg-amber-50 text-amber-700; }
+  .badge-blue   { @apply bg-blue-50 text-blue-600; }
 }
+
+/* ── React Big Calendar ──────────────────────────────────────────── */
+.rbc-calendar { font-family: inherit; border-radius: 0.75rem; overflow: hidden; border: 1px solid #e5e7eb; }
+.rbc-header { padding: 10px 0; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6b7280; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+.rbc-toolbar button { font-size: 0.8rem; font-weight: 500; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 5px 12px; color: #374151; background: white; transition: background 0.15s; }
+.rbc-toolbar button:hover { background: #f3f4f6; border-color: #d1d5db; }
+.rbc-toolbar button.rbc-active { background: #1d4c4f; color: white; border-color: #1d4c4f; }
+.rbc-event { background: #28b67e !important; border: none !important; border-radius: 4px !important; font-size: 0.75rem; padding: 2px 6px; }
+.rbc-today { background: #e8f8f2 !important; }
+.rbc-allday-cell { display: none; }
+
+/* ── Toastify ────────────────────────────────────────────────────── */
+.Toastify__toast { border-radius: 0.75rem !important; font-size: 0.875rem; font-family: inherit; box-shadow: 0 4px 16px rgb(0 0 0 / 0.12) !important; }
+.Toastify__toast--info    { background: #1d4c4f !important; color: white !important; }
+.Toastify__toast--success { background: #28b67e !important; color: white !important; }
+
+/* ── MUI DatePicker ──────────────────────────────────────────────── */
+.MuiOutlinedInput-root { font-family: inherit !important; font-size: 0.875rem !important; border-radius: 0.5rem !important; }
+.MuiOutlinedInput-notchedOutline { border-color: #e5e7eb !important; }
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline { border-color: #28b67e !important; }
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline { border-color: #28b67e !important; border-width: 1.5px !important; }
+
+/* ── React Select ────────────────────────────────────────────────── */
+.toki-select__control { border-color: #e5e7eb !important; border-radius: 0.5rem !important; min-height: 40px !important; box-shadow: none !important; font-size: 0.875rem; }
+.toki-select__control:hover { border-color: #28b67e !important; }
+.toki-select__control--is-focused { border-color: #28b67e !important; box-shadow: 0 0 0 3px rgb(40 182 126 / 0.15) !important; }
+.toki-select__option--is-selected { background-color: #28b67e !important; }
+.toki-select__option--is-focused { background-color: #e8f8f2 !important; color: #1d4c4f !important; }

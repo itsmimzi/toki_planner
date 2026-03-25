@@ -1,20 +1,18 @@
-import React from "react";
-import logoHome from "../logo/logoHome4.png";
-import NavBar from "./NavBar";
+import React from 'react';
+import logoHome from '../logo/logoHome4.png';
+import NavBar from './NavBar';
+import { Link } from 'react-router-dom';
 
-const Header = ( ) => {
-
+const Header = () => {
   return (
-    <div>
-      <div className="header-wrapper">
-        <div className="header-box">
-          <div className="logo-home">
-            <a href='/home'><img className="img-logo-home" src={logoHome} alt="logoHome" /></a>
-          </div>
-          <NavBar/>
-        </div>
+    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100">
+      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <Link to="/home" className="flex items-center">
+          <img src={logoHome} alt="Toki" className="h-8 w-auto" />
+        </Link>
+        <NavBar />
       </div>
-    </div>
+    </header>
   );
 };
 
