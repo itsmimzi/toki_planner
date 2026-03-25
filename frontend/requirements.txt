@@ -1,0 +1,25 @@
+toki@0.1.0 /Users/marymou/Desktop/UQO/2024/05_Hiver_2024/SO-INF4173/toki/toki
+├── @babel/plugin-proposal-private-property-in-object@7.21.11
+├── @emailjs/browser@4.3.3
+├── @fortawesome/fontawesome-free@6.5.1
+├── @mui/material@5.15.15
+├── @mui/x-date-pickers@7.2.0
+├── axios@1.6.8
+├── bootstrap@5.3.2
+├── dayjs@1.11.10
+├── gh-pages@6.1.1
+├── js-cookie@3.0.5
+├── moment-timezone@0.5.45
+├── moment@2.30.1
+├── react-beautiful-dnd@13.1.1
+├── react-big-calendar@1.11.6
+├── react-bootstrap@2.10.1
+├── react-datetime-picker@5.6.0
+├── react-dom@18.2.0
+├── react-router-dom@6.22.3
+├── react-scripts@5.0.1
+├── react-select@5.8.0
+├── react-toastify@10.0.5
+├── react@18.2.0
+└── reactstrap@9.2.2
+

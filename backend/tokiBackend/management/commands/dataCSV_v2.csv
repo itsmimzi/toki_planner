@@ -1,0 +1,19 @@
+task_id,task_title,task_description,priority,task_type,duration_in_min,day_of_week,has_description,address,has_address,url,has_url,is_complete,task_date,start_time,end_time
+1,Family Game Night,Make list of games and snacks. Send out a reminder to everyone a day before.,medium,personal,90,Wednesday,True,,False,www.myzoomcall.com,True,True,2022-01-21,13:00,14:30
+2,Compile Year-End Financial Report,Prepare the end-of-year financial report. Ensure all data is accurately consolidated from all departments.,medium,work,120,Wednesday,True,,False,,False,True,2021-08-31,15:00,17:00
+3,Server Crash Fix,fix the server crash issue reported by users by patching the memory leak in the new deployment.,low,coding,120,Tuesday,True,,False,,False,True,2022-05-05,07:00,09:00
+4,Client Issue Resolution and Compensation,Immediately address the client concerns regarding the product delivery delay and propose a compensatory plan.,high,work,90,Friday,True,,False,,False,True,2022-02-04,07:00,08:30
+5,Employee Directory Update,Update the employee contact directory and verify the current positions and department heads.,ASAP,work,60,Friday,True,,False,,False,True,2021-10-26,19:00,20:00
+6,Marathon Intensive Workout Plan,,ASAP,workout,60,Wednesday,False,,False,,False,True,2022-04-04,08:00,09:00
+7,Framework Evaluation for System Update,,low,coding,120,Wednesday,False,,False,,False,True,2021-12-03,10:00,12:00
+8,Authentication Module Integration,Complete the integration of new authentication module with the main app.,ASAP,coding,180,Wednesday,True,,False,,False,True,2022-01-27,08:00,11:00
+9,Legacy System Code Refactoring,,medium,coding,240,Wednesday,False,,False,,False,True,2022-08-19,13:00,17:00
+10,New Product Campaign Strategy,Coordinate with the marketing team to outline the campaign for the new product launch next month.,medium,work,30,Wednesday,True,,False,,False,True,2022-11-18,20:00,20:30
+11,Call contractor for Renovation Plans,Schedule a call with the contractor to discuss the renovation plans and finalize the color palette.,low,personal,30,Wednesday,True,,False,,False,True,2022-08-10,20:00,20:30
+12,Update Repo with new patches,,ASAP,coding,210,Tuesday,False,,False,,False,False,2022-02-28,14:00,
+13,Client Feedback Discussion Notes,Review and prepare notes on the client feedback from the last session to discuss in the next team meeting.,low,work,30,Friday,True,,False,,False,True,2022-10-12,09:00,09:30
+14,Weekend Hiking Trip Planning,Organize weekend hiking trip with group. Check weather conditions and route.,ASAP,workout,60,Wednesday,True,,False,,False,True,2022-04-07,19:00,20:00
+15,Surprise Birthday Party Finalization,"Finalize guest list and sittings, and confirm the booking with venue.",ASAP,personal,120,Friday,True,,False,,False,False,2022-02-24,20:00,
+16,DynamoCycl and weekly meal plan,,ASAP,workout,60,Tuesday,False,5678 Dune Road K7L 6P0 TO ,True,,False,True,2022-02-08,08:00,09:00
+17,Family Vacation Itinerary,"Plan family vacation itinerary, check flights, accommodations, and activities.",high,personal,120,Friday,True,1234 Pablo Street M4K 5Y9 TO,True,,False,True,2021-09-13,10:00,12:00
+18,Sales Growth Quarterly Presentation,Prepare a detailed presentation on the projected sales figures and growth indicators for the next quarter.,medium,work,60,Friday,True,,False,,False,False,2022-01-25,13:00,

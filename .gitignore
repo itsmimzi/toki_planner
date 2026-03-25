@@ -1,23 +1,44 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
+# Virtual environments
+myenv/
+venv/
+env/
+.venv/
 
-# testing
-/coverage
+# Django
+*.sqlite3
+*.log
+db.sqlite3
+staticfiles/
 
-# production
-/build
-
-# misc
-.DS_Store
+# Environment variables
+.env
+.env.*
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
+# Node / React
+node_modules/
+frontend/build/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Fly.io (keep out of git — contains app name/secrets hints)
+fly.toml
