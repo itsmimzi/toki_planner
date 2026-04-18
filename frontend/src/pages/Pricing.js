@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Check, ArrowRight } from 'lucide-react';
 import { useAuth } from '../components/AuthContext';
 
@@ -80,6 +80,7 @@ const faq = [
 ];
 
 const Pricing = () => {
+  useEffect(() => { document.title = 'Pricing | Toki'; }, []);
   const { toggleSignup } = useAuth();
 
   return (

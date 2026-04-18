@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Zap, BarChart2, Layers, ArrowRight, Check } from 'lucide-react';
 import logoLanding from '../logo/logoFeaturesHeader.png';
@@ -8,6 +8,7 @@ import iconRight from '../logo/icons/_right.svg';
 import { useAuth } from '../components/AuthContext';
 
 const Home = () => {
+  useEffect(() => { document.title = 'Toki'; }, []);
   const { toggleSignup } = useAuth();
 
   return (

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Send, Mail, MessageSquare } from 'lucide-react';
 import { useAuth } from '../components/AuthContext';
 
 const Contact = () => {
+  useEffect(() => { document.title = 'Contact | Toki'; }, []);
   const { sendContact } = useAuth();
   const [email, setEmail]     = useState('');
   const [message, setMessage] = useState('');

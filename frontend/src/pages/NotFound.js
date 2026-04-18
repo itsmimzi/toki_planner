@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import logo from '../logo/logo404.png';
 
 const NotFound = () => {
+  useEffect(() => { document.title = '404 | Toki'; }, []);
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center px-6 text-center bg-white">
       <img src={logo} alt="Toki 404" className="h-24 w-auto mb-8 opacity-40" />

@@ -42,6 +42,7 @@ const HomePage = () => {
   const [priorityFilter, setPriorityFilter] = useState('');
   const [showWelcome, setShowWelcome]   = useState(() => sessionStorage.getItem('justLoggedIn') === 'true');
 
+  useEffect(() => { document.title = 'Dashboard | Toki'; }, []);
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
   useEffect(() => {

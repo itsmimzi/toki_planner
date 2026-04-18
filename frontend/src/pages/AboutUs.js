@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { GitFork, ArrowRight, Cpu, Clock, SlidersHorizontal, Archive } from 'lucide-react';
 import { useAuth } from '../components/AuthContext';
 
@@ -26,6 +26,7 @@ const features = [
 ];
 
 const AboutUs = () => {
+  useEffect(() => { document.title = 'About | Toki'; }, []);
   const { toggleSignup } = useAuth();
 
   return (
