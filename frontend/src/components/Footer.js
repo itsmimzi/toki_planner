@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import logoHome from '../logo/logoHome4.png';
+import logoHome from '../logo/toki-logo-header.svg';
 
 const Footer = () => {
   return (

@@ -2,9 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Zap, BarChart2, Layers, ArrowRight, Check } from 'lucide-react';
 import logoLanding from '../logo/logoFeaturesHeader.png';
-import iconLeft from '../logo/icons/left.png';
-import iconCenter from '../logo/icons/center.png';
-import iconRight from '../logo/icons/right.png';
+import iconLeft from '../logo/icons/_left.svg';
+import iconCenter from '../logo/icons/_center.svg';
+import iconRight from '../logo/icons/_right.svg';
 import { useAuth } from '../components/AuthContext';
 
 const Home = () => {
@@ -93,7 +93,7 @@ const Home = () => {
           ].map(({ icon, lucide, title, desc }) => (
             <div key={title} className="bg-white border border-gray-100 rounded-2xl p-7 shadow-card hover:shadow-card-hover transition-shadow">
               <div className="flex items-center gap-3 mb-4">
-                <img src={icon} alt={title} className="h-9 w-9 object-contain" />
+                <img src={icon} alt={title} className="h-12 w-12 object-contain" />
                 <div className="flex items-center gap-1.5">
                   {lucide}
                   <span className="text-sm font-semibold text-toki-teal uppercase tracking-wide">{title}</span>
