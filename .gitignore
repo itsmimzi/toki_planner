@@ -42,3 +42,11 @@ yarn-error.log*
 
 # Fly.io (keep out of git — contains app name/secrets hints)
 fly.toml
+
+# Local backups
+backup/
+
+# Local test files
+backend/backend/settings_test.py
+backend/test_api.py
+backend/test_local.db

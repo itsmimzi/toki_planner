@@ -40,8 +40,17 @@ const HomePage = () => {
   const [notifiedTasks, setNotifiedTasks] = useState(new Set());
   const [categoryFilter, setCategoryFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
+  const [showWelcome, setShowWelcome]   = useState(() => sessionStorage.getItem('justLoggedIn') === 'true');
 
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
+
+  useEffect(() => {
+    if (showWelcome) {
+      sessionStorage.removeItem('justLoggedIn');
+      const t = setTimeout(() => setShowWelcome(false), 4500);
+      return () => clearTimeout(t);
+    }
+  }, [showWelcome]);
 
   // 30-min upcoming task alerts
   useEffect(() => {
@@ -178,6 +187,17 @@ const HomePage = () => {
 
         {/* ── Main content ─────────────────────────────────────────── */}
         <main className="flex-1 overflow-y-auto p-6">
+
+          {/* Welcome banner */}
+          {showWelcome && (
+            <div className="mb-5 flex items-center gap-3 bg-toki-green-light border border-toki-green/20 text-toki-teal rounded-xl px-5 py-3 animate-fade-in">
+              <span className="text-lg">👋</span>
+              <p className="text-sm font-medium">
+                Welcome back, <span className="font-semibold">{username || 'there'}</span>! Ready to take on the day?
+              </p>
+            </div>
+          )}
+
           {/* View header */}
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-lg font-semibold text-gray-900">

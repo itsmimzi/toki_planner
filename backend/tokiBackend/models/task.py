@@ -34,7 +34,9 @@ class Task(models.Model):
     hasDescription = models.BooleanField(default=False)
     hasUrl = models.BooleanField(default=False)
     isComplete = models.BooleanField(default=False)
-    
+    due_date = models.DateTimeField(null=True, blank=True)
+    is_focus_block = models.BooleanField(default=False)
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
 
     def save(self, *args, **kwargs):

@@ -5,14 +5,14 @@ import calendar
 class createTaskForm(forms.ModelForm):
     category = forms.ModelChoiceField(queryset=Category.objects.all(), to_field_name="id")
     priority = forms.ModelChoiceField(queryset=Priority.objects.all(), to_field_name="id")
-    start_time = forms.DateTimeField(input_formats=['%Y-%m-%dT%H:%M:%S.%fZ'])
+    start_time = forms.DateTimeField(input_formats=['%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ', '%Y-%m-%dT%H:%M'])
+    due_date   = forms.DateTimeField(input_formats=['%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ', '%Y-%m-%dT%H:%M'], required=False)
 
     class Meta:
         model = Task
         fields = [
-                
                 'title',
-                'description', 
+                'description',
                 'priority',
                 'category',
                 'start_time',
@@ -21,6 +21,8 @@ class createTaskForm(forms.ModelForm):
                 'address',
                 'isComplete',
                 'end_time',
+                'due_date',
+                'is_focus_block',
         ]
 
     def __init__(self, *args, **kwargs):

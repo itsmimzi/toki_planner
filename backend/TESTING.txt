@@ -1,0 +1,42 @@
+Toki Planner — Local API Testing
+==================================
+
+Prerequisites:
+  - Python 3.x with Django installed
+  - No need for Postgres, TensorFlow, or ML dependencies (all mocked)
+
+Files (local-only, not committed to git):
+  - backend/backend/settings_test.py   — Django settings that use SQLite instead of Postgres
+  - backend/test_api.py                — API test suite
+  - backend/test_local.db              — SQLite DB created automatically on first run
+
+Running tests:
+  cd backend
+  python3 test_api.py
+
+What it does:
+  1. Mocks TensorFlow, pandas, sklearn, numpy so Django can boot without ML deps
+  2. Points Django at settings_test.py (SQLite)
+  3. Runs migrations on a local test_local.db
+  4. Executes the following endpoint tests:
+
+  Auth:
+    - POST /api/signup/    — returns token + username (201)
+    - POST /api/login/     — returns token + username (200)
+    - POST /api/login/     — wrong password returns 400/401
+    - POST /api/logout/    — invalidates token
+
+  Authorization:
+    - GET /api/tasks/      — without token returns 401
+    - GET /api/tasks/      — with token returns 200
+
+  Public endpoints:
+    - GET /api/categories/ — returns 200
+    - GET /api/priorities/ — returns 200
+
+  Task CRUD:
+    - POST /api/tasks/create/ — with token returns 201 + task_id
+
+Notes:
+  - test_local.db is disposable — delete and re-run to reset
+  - Tests authenticate via email (USERNAME_FIELD = 'email'), not username

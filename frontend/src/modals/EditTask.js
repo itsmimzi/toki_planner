@@ -1,7 +1,9 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { X, Pencil } from 'lucide-react';
+import { X, Pencil, Lock } from 'lucide-react';
 import BasicDateTimePicker from '../components/BasicDateTimePicker';
+import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import { useAuth } from '../components/AuthContext';
 import { toast } from 'react-toastify';
@@ -11,7 +13,7 @@ const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 const EditTask = ({ isOpen, toggle, taskObj }) => {
   const { updateTask } = useAuth();
-  const [taskData, setTaskData]     = useState({ title: '', description: '', category: '', priority: '', start_time: new Date().toISOString(), duration: 15, url: '', address: '' });
+  const [taskData, setTaskData]     = useState({ title: '', description: '', category: '', priority: '', start_time: new Date().toISOString(), duration: 15, url: '', address: '', due_date: '', is_focus_block: false });
   const [categories, setCategories] = useState([]);
   const [priorities, setPriorities] = useState([]);
 
@@ -58,7 +60,7 @@ const EditTask = ({ isOpen, toggle, taskObj }) => {
   // Clear stale data when modal closes
   const close = () => {
     toggle();
-    setTaskData({ title: '', description: '', category: '', priority: '', start_time: new Date().toISOString(), duration: 15, url: '', address: '' });
+    setTaskData({ title: '', description: '', category: '', priority: '', start_time: new Date().toISOString(), duration: 15, url: '', address: '', due_date: '', is_focus_block: false });
   };
 
   if (!taskObj) return null;
@@ -135,6 +137,18 @@ const EditTask = ({ isOpen, toggle, taskObj }) => {
                   />
                 </div>
 
+                {/* Due date */}
+                <div>
+                  <label className="field-label">Due date <span className="text-gray-300">(optional)</span></label>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DateTimePicker
+                      value={taskData.due_date ? dayjs(taskData.due_date) : null}
+                      onChange={v => setTaskData(p => ({ ...p, due_date: v ? v.toISOString() : '' }))}
+                      slotProps={{ textField: { size: 'small', fullWidth: true, placeholder: 'No deadline' } }}
+                    />
+                  </LocalizationProvider>
+                </div>
+
                 {/* URL + Address */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -144,6 +158,35 @@ const EditTask = ({ isOpen, toggle, taskObj }) => {
                   <div>
                     <label className="field-label">Address</label>
                     <input name="address" className="field" placeholder="Location…" value={taskData.address || ''} onChange={handleChange} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Focus block toggle */}
+              <div className="px-7 pb-4">
+                <div
+                  onClick={() => setTaskData(p => ({ ...p, is_focus_block: !p.is_focus_block }))}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer border transition-colors ${
+                    taskData.is_focus_block
+                      ? 'bg-indigo-50 border-indigo-200'
+                      : 'bg-gray-50 border-transparent hover:border-gray-200'
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    taskData.is_focus_block ? 'bg-indigo-100' : 'bg-gray-100'
+                  }`}>
+                    <Lock size={14} className={taskData.is_focus_block ? 'text-indigo-600' : 'text-gray-400'} />
+                  </div>
+                  <div>
+                    <p className={`text-sm font-medium ${taskData.is_focus_block ? 'text-indigo-700' : 'text-gray-700'}`}>Focus block</p>
+                    <p className="text-xs text-gray-400">Protected time — no interruptions</p>
+                  </div>
+                  <div className={`ml-auto w-9 h-5 rounded-full transition-colors flex-shrink-0 ${
+                    taskData.is_focus_block ? 'bg-indigo-500' : 'bg-gray-200'
+                  }`}>
+                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm mt-0.5 transition-transform ${
+                      taskData.is_focus_block ? 'translate-x-4' : 'translate-x-0.5'
+                    }`} />
                   </div>
                 </div>
               </div>

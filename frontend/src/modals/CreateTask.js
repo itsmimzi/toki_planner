@@ -1,7 +1,9 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, Lock } from 'lucide-react';
 import BasicDateTimePicker from '../components/BasicDateTimePicker';
+import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import axios from 'axios';
 
@@ -10,7 +12,8 @@ const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 const CreateTask = ({ isOpen, toggle, createTask }) => {
   const [taskData, setTaskData] = useState({
     title: '', description: '', category: '', priority: '',
-    start_time: new Date().toISOString(), duration: 15, url: '', address: '',
+    start_time: new Date().toISOString(), duration: 15, url: '', address: '', due_date: '',
+    is_focus_block: false,
   });
   const [errors, setErrors]         = useState({});
   const [categories, setCategories] = useState([]);
@@ -40,10 +43,12 @@ const CreateTask = ({ isOpen, toggle, createTask }) => {
 
   const validate = () => {
     const e = {};
-    if (!taskData.title.trim())  e.title    = 'Title is required';
-    if (!taskData.category)      e.category = 'Please select a category';
-    if (!taskData.priority)      e.priority = 'Please select a priority';
-    if (!taskData.start_time)    e.start_time = 'Please select a start time';
+    if (!taskData.is_focus_block) {
+      if (!taskData.title.trim()) e.title    = 'Title is required';
+      if (!taskData.category)     e.category = 'Please select a category';
+      if (!taskData.priority)     e.priority = 'Please select a priority';
+    }
+    if (!taskData.start_time) e.start_time = 'Please select a start time';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -62,7 +67,8 @@ const CreateTask = ({ isOpen, toggle, createTask }) => {
 
   const resetForm = () => {
     setTaskData({ title: '', description: '', category: '', priority: '',
-      start_time: new Date().toISOString(), duration: 15, url: '', address: '' });
+      start_time: new Date().toISOString(), duration: 15, url: '', address: '', due_date: '',
+      is_focus_block: false });
     setErrors({});
   };
 
@@ -106,33 +112,48 @@ const CreateTask = ({ isOpen, toggle, createTask }) => {
                 <div className="px-7 py-6 flex flex-col gap-5">
 
                   {/* Title */}
-                  <div>
-                    <label className="field-label">Title <span className="text-red-400">*</span></label>
+                  <div className={taskData.is_focus_block ? 'opacity-50' : ''}>
+                    <label className="field-label">
+                      Title{' '}
+                      {taskData.is_focus_block
+                        ? <span className="text-gray-300 normal-case font-normal">(optional — defaults to "Focus Block")</span>
+                        : <span className="text-red-400">*</span>}
+                    </label>
                     <input
                       type="text"
                       name="title"
                       className={`field ${errors.title ? 'border-red-300' : ''}`}
-                      placeholder="What needs to get done?"
+                      placeholder={taskData.is_focus_block ? 'Focus Block' : 'What needs to get done?'}
                       value={taskData.title}
                       onChange={handleChange}
-                      required
+                      required={!taskData.is_focus_block}
                     />
                     {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
                   </div>
 
                   {/* Category + Priority row */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className={`grid grid-cols-2 gap-4 ${taskData.is_focus_block ? 'opacity-50' : ''}`}>
                     <div>
-                      <label className="field-label">Category <span className="text-red-400">*</span></label>
-                      <select name="category" className={`field ${errors.category ? 'border-red-300' : ''}`} value={taskData.category} onChange={handleChange} required>
+                      <label className="field-label">
+                        Category{' '}
+                        {taskData.is_focus_block
+                          ? <span className="text-gray-300 normal-case font-normal">(optional)</span>
+                          : <span className="text-red-400">*</span>}
+                      </label>
+                      <select name="category" className={`field ${errors.category ? 'border-red-300' : ''}`} value={taskData.category} onChange={handleChange} required={!taskData.is_focus_block}>
                         <option value="">Select…</option>
                         {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                       </select>
                       {errors.category && <p className="text-xs text-red-500 mt-1">{errors.category}</p>}
                     </div>
                     <div>
-                      <label className="field-label">Priority <span className="text-red-400">*</span></label>
-                      <select name="priority" className={`field ${errors.priority ? 'border-red-300' : ''}`} value={taskData.priority} onChange={handleChange} required>
+                      <label className="field-label">
+                        Priority{' '}
+                        {taskData.is_focus_block
+                          ? <span className="text-gray-300 normal-case font-normal">(optional)</span>
+                          : <span className="text-red-400">*</span>}
+                      </label>
+                      <select name="priority" className={`field ${errors.priority ? 'border-red-300' : ''}`} value={taskData.priority} onChange={handleChange} required={!taskData.is_focus_block}>
                         <option value="">Select…</option>
                         {priorities.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
                       </select>
@@ -164,6 +185,18 @@ const CreateTask = ({ isOpen, toggle, createTask }) => {
                     {errors.start_time && <p className="text-xs text-red-500 mt-1">{errors.start_time}</p>}
                   </div>
 
+                  {/* Due date */}
+                  <div>
+                    <label className="field-label">Due date <span className="text-gray-300">(optional)</span></label>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DateTimePicker
+                        value={taskData.due_date ? dayjs(taskData.due_date) : null}
+                        onChange={v => setTaskData(p => ({ ...p, due_date: v ? v.toISOString() : '' }))}
+                        slotProps={{ textField: { size: 'small', fullWidth: true, placeholder: 'No deadline' } }}
+                      />
+                    </LocalizationProvider>
+                  </div>
+
                   {/* URL + Address */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -174,6 +207,33 @@ const CreateTask = ({ isOpen, toggle, createTask }) => {
                       <label className="field-label">Address <span className="text-gray-300">(optional)</span></label>
                       <input name="address" className="field" placeholder="Location…" value={taskData.address} onChange={handleChange} />
                     </div>
+                  </div>
+                </div>
+
+                {/* Focus block toggle */}
+                <div
+                  onClick={() => setTaskData(p => ({ ...p, is_focus_block: !p.is_focus_block }))}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer border transition-colors ${
+                    taskData.is_focus_block
+                      ? 'bg-indigo-50 border-indigo-200'
+                      : 'bg-gray-50 border-transparent hover:border-gray-200'
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    taskData.is_focus_block ? 'bg-indigo-100' : 'bg-gray-100'
+                  }`}>
+                    <Lock size={14} className={taskData.is_focus_block ? 'text-indigo-600' : 'text-gray-400'} />
+                  </div>
+                  <div>
+                    <p className={`text-sm font-medium ${taskData.is_focus_block ? 'text-indigo-700' : 'text-gray-700'}`}>Focus block</p>
+                    <p className="text-xs text-gray-400">Protected time — no interruptions</p>
+                  </div>
+                  <div className={`ml-auto w-9 h-5 rounded-full transition-colors flex-shrink-0 ${
+                    taskData.is_focus_block ? 'bg-indigo-500' : 'bg-gray-200'
+                  }`}>
+                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm mt-0.5 transition-transform ${
+                      taskData.is_focus_block ? 'translate-x-4' : 'translate-x-0.5'
+                    }`} />
                   </div>
                 </div>
 

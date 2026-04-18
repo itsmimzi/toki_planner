@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "rest_framework.authtoken",
     "tokiBackend",
     "corsheaders",
 ]
@@ -42,13 +43,15 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
 CORS_ALLOW_CREDENTIALS = True
 CSRF_COOKIE_HTTPONLY = False
 
-# Cross-origin cookie policy — required so the browser sends the session
-# cookie on cross-origin POST requests (Vercel → Fly.io).
-# SameSite=Lax (browser default) blocks cookies on cross-origin POST.
-SESSION_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE   = True   # required when SameSite=None
-CSRF_COOKIE_SAMESITE    = 'None'
-CSRF_COOKIE_SECURE      = True
+# Token auth for the SPA — no session cookies, no CSRF complexity.
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
 
 CSRF_TRUSTED_ORIGINS = os.environ.get(
     'CSRF_TRUSTED_ORIGINS',
@@ -104,6 +107,14 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+EMAIL_BACKEND  = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST     = 'smtp.gmail.com'
+EMAIL_PORT     = 587
+EMAIL_USE_TLS  = True
+EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL  = os.environ.get('EMAIL_HOST_USER', 'noreply@toki.app')
 
 LOGGING = {
     'version': 1,

@@ -1,146 +1,123 @@
-import React, {createContext, useContext, useState, useEffect, useCallback } from 'react';
-import axios from "axios";
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
-import { toast } from 'react-toastify';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
-axios.defaults.xsrfHeaderName = "X-CSRFToken";
-axios.defaults.xsrfCookieName = 'csrftoken';
-axios.defaults.withCredentials = true;
-
+// Token auth: send Authorization header, no cookies needed
+axios.defaults.withCredentials = false;
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-
     const navigate = useNavigate();
-    const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("isLoggedIn") === "true");
-    const [username, setUsername] = useState(localStorage.getItem("username") || "");
-    const [alert, setAlert] = useState({ show: false, message: '', type: ''});
-    const [tasks, setTasks] = useState([]);
-    const [loginError, setLoginError] = useState("");
-    const [modalLogin, setModalLogin] = useState(false);
-    const [modalSignup, setModalSignup] = useState(false);
 
-    const getCsrfToken = () => {
-        return Cookies.get('csrftoken');
-    };
+    // Token persisted in localStorage — source of truth for auth state
+    const [token,      setToken]      = useState(localStorage.getItem('authToken') || null);
+    const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('authToken'));
+    const [username,   setUsername]   = useState(localStorage.getItem('username') || '');
+    const [alert,      setAlert]      = useState({ show: false, message: '', type: '' });
+    const [tasks,      setTasks]      = useState([]);
+    const [loginError, setLoginError] = useState('');
+    const [modalLogin, setModalLogin] = useState(false);
+    const [modalSignup,setModalSignup]= useState(false);
+
+    // Build auth header from current token
+    const authHeader = useCallback((tok) => ({
+        'Authorization': `Token ${tok || token}`,
+        'Content-Type': 'application/json',
+    }), [token]);
+
+    // ── Auth ──────────────────────────────────────────────────────────────
 
     const logInUser = async ({ email, password }) => {
-        const csrfToken = getCsrfToken();
         try {
-            const response = await axios.post(`${API_BASE}/api/login/`, { username: email, password }, {
-                headers: {'X-CSRFToken': csrfToken, 'Content-Type': 'application/json'} 
-            });
-            if (response.status === 200) {
+            const res = await axios.post(`${API_BASE}/api/login/`, { username: email, password });
+            if (res.status === 200) {
+                const { token: newToken, username: newUsername } = res.data;
+                localStorage.setItem('authToken', newToken);
+                localStorage.setItem('username',  newUsername);
+                setToken(newToken);
                 setIsLoggedIn(true);
-                setUsername(response.data.username);
+                setUsername(newUsername);
                 setModalLogin(false);
                 setLoginError('');
+                sessionStorage.setItem('justLoggedIn', 'true');
+                await new Promise(r => setTimeout(r, 700));
                 navigate('/homepage');
             }
-            else {
-                throw new Error(response.statusText || "Login failed due to server error");
-            }
         } catch (error) {
-            const errMsg = error.response && error.response.data.ERROR
-                ? error.response.data.ERROR 
-                : (error.response
-                    ? (error.response.data.__all__
-                        ? error.response.data.__all__[0]
-                        : JSON.stringify(error.response.data))
-                : "No response from server");
-            console.error('Login error:', errMsg);
+            const errMsg = error.response?.data?.ERROR
+                || error.response?.data?.__all__?.[0]
+                || (error.response?.data ? JSON.stringify(error.response.data) : 'No response from server');
             setLoginError(errMsg);
             setIsLoggedIn(false);
         }
     };
 
-    const signUpUser = async ({ username, email, password1, password2 }) => {
-        const csrfToken = getCsrfToken();
-        const userData = {
-            username,
-            email,
-            password1: password1,
-            password2: password2
-        };
+    const signUpUser = async ({ username: uname, email, password1, password2 }) => {
         try {
-            const response = await axios.post(`${API_BASE}/api/signup/`, JSON.stringify(userData), {
-                headers: {'X-CSRFToken': csrfToken, 'Content-Type': 'application/json'} 
-            });
-            if (response.status===201) {
+            const res = await axios.post(`${API_BASE}/api/signup/`, { username: uname, email, password1, password2 });
+            if (res.status === 201) {
+                const { token: newToken, username: newUsername } = res.data;
+                localStorage.setItem('authToken', newToken);
+                localStorage.setItem('username',  newUsername);
+                setToken(newToken);
                 setIsLoggedIn(true);
-                setUsername(userData.username);
+                setUsername(newUsername);
                 setModalSignup(false);
                 setLoginError('');
-                toast.success(`Welcome to Toki, ${userData.username}! 🎉`);
+                sessionStorage.setItem('justLoggedIn', 'true');
+                await new Promise(r => setTimeout(r, 700));
+                navigate('/homepage');
                 return true;
-            } else {
-                throw new Error('Failed to sign up.');
             }
         } catch (error) {
-            let errMsg = "An error occurred during signup.";
-            if (error.response && error.response.data) {
-                errMsg = Object.values(error.response.data).map((msgs) => msgs.join(" ")).join(" ");
-            }
-            console.error("Signup error:", errMsg);
+            const errMsg = error.response?.data
+                ? Object.values(error.response.data).flat().join(' ')
+                : 'An error occurred during signup.';
             setLoginError(errMsg);
             setIsLoggedIn(false);
             return false;
         }
     };
 
-    const logOutUser = () => {
+    const logOutUser = async () => {
+        try {
+            if (token) {
+                await axios.post(`${API_BASE}/api/logout/`, {}, { headers: authHeader() });
+            }
+        } catch (_) { /* best-effort */ }
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('username');
+        setToken(null);
         setIsLoggedIn(false);
-        setUsername("");
-        localStorage.removeItem("isLoggedIn");
-        localStorage.removeItem("username");
-        navigate('/home'); 
+        setUsername('');
+        setTasks([]);
+        navigate('/home');
     };
 
-    const sendContact = async ({ email, message }) => {
-        const csrfToken = getCsrfToken();
+    // ── Tasks ─────────────────────────────────────────────────────────────
+
+    const fetchTasks = useCallback(async () => {
+        if (!token) return;
         try {
-            const response = await axios.post(`${API_BASE}/api/contact/`, JSON.stringify({ email, message }), {
-                headers: { 'X-CSRFToken': csrfToken, 'Content-Type':'application/json' },
-            });
-            if (response.status===200) {
-                setAlert({ show: true, message: 'Message sent successfully!', type: 'success' });
-                console.log('Submitting form', { email, message });
-                return true;
-            } else { 
-                throw new Error('Failed to send message');
+            const res = await axios.get(`${API_BASE}/api/tasks/`, { headers: authHeader(token) });
+            if (res.status === 200 && res.data) {
+                setTasks(res.data.map(t => ({ ...t, id: t.task_id })));
             }
         } catch (error) {
-            setAlert({ show: true, message: error.message, type: 'danger'});
-            return false;
+            console.error('Failed to fetch tasks:', error.message);
         }
-    };
-
-    const toggleLogin = () => {
-        setModalLogin(!modalLogin);
-        setLoginError("");
-    };
-
-    const toggleSignup = () => {
-        setModalSignup(!modalSignup);
-        setLoginError("");
-    };
+    }, [token, authHeader]);
 
     const createTask = async (taskData) => {
-        const csrfToken = getCsrfToken();
-        try { 
-            const response = await axios.post(`${API_BASE}/api/tasks/create/`, JSON.stringify(taskData), {
-                headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' }
-            });
-            if (response.status === 201) {
-                setTasks(prevTasks => [...prevTasks, {...taskData, id: response.data.task_id}]);
-                setAlert({ show: true, message: 'Task created successfully!', type: 'success' });
+        try {
+            const res = await axios.post(`${API_BASE}/api/tasks/create/`, taskData, { headers: authHeader() });
+            if (res.status === 201) {
+                // Optimistic: add immediately with real task_id from server
+                setTasks(prev => [...prev, { ...res.data, id: res.data.task_id }]);
                 return true;
-            } else {
-                throw new Error('Task creation failed.');
             }
         } catch (error) {
             setAlert({ show: true, message: error.message, type: 'danger' });
@@ -149,23 +126,16 @@ export const AuthProvider = ({ children }) => {
     };
 
     const updateTask = async (taskData) => {
-        console.log("update task with this new data => :", taskData)
-
-        const csrfToken = getCsrfToken();
         try {
-            console.log(taskData)
-            const response = await axios.patch(`${API_BASE}/api/tasks/${taskData.task_id}/update/`, JSON.stringify(taskData), {
-                headers: { 'X-CSRFToken': csrfToken,'Content-Type': 'application/json' }
-        });
-        if (response.status === 200) {
-            setTasks((prevTasks) =>
-                prevTasks.map((task) => (task.id === taskData.task_id ? { ...task, ...taskData } : task)),
+            const res = await axios.patch(
+                `${API_BASE}/api/tasks/${taskData.task_id}/update/`,
+                taskData,
+                { headers: authHeader() }
             );
-            setAlert({ show: true, message: 'Task updated successfully!', type: 'success' });
-            return true;
-        } else {
-            throw new Error('Task update failed.');
-        }
+            if (res.status === 200) {
+                setTasks(prev => prev.map(t => t.id === taskData.task_id ? { ...t, ...res.data, id: res.data.task_id } : t));
+                return true;
+            }
         } catch (error) {
             setAlert({ show: true, message: error.message, type: 'danger' });
             return false;
@@ -173,114 +143,66 @@ export const AuthProvider = ({ children }) => {
     };
 
     const deleteTask = async (task_id) => {
-        console.log("Attempting to delete task with ID:", task_id);
-        const csrfToken = Cookies.get('csrftoken');
         try {
-            const response = await axios.delete(`${API_BASE}/api/tasks/${task_id}/delete/`, {
-                headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json'}
-            });
-            if (response.status === 204){
-                setTasks(currentTasks => {
-                    const updatedTasks = currentTasks.filter(task => task.id !== task_id); 
-                    console.log("Updated tasks post-deletion:", updatedTasks);        
-                    return updatedTasks;
-                });       
-                setAlert({ show: true, message: 'Task deleted successfully!', type: 'success' });       
-            } else {
-                throw new Error('Task deletion failed.');
-            }
+            await axios.delete(`${API_BASE}/api/tasks/${task_id}/delete/`, { headers: authHeader() });
+            setTasks(prev => prev.filter(t => t.id !== task_id));
         } catch (error) {
-            console.error("Deletion error:", error);
-            setAlert({ show: true, message: error.message, type: 'danger' });    
+            setAlert({ show: true, message: error.message, type: 'danger' });
         }
     };
 
-    const fetchTasks = useCallback( async () => {
-        const csrfToken = getCsrfToken();
-        try {
-            const response = await axios.get(`${API_BASE}/api/tasks/`, {
-                headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' }
-            });
-            if (response.status === 200 && response.data){
-                const fetchedTasks = response.data.map(task => ({
-                    ...task,
-                    id : task.task_id,
-                    isComplete: task.isComplete,
-                }));
-                setTasks(fetchedTasks);
-            } else {
-                throw new Error('Failed to fetch tasks');
-            }
-        } catch (error) {
-            console.error('Failed to fetch tasks:', error.message);
-            setAlert({ show: true, message: error.message, type: 'danger' });
-        }
-    },[]);
-
-    useEffect(() => {
-        localStorage.setItem("isLoggedIn", isLoggedIn);
-        localStorage.setItem("username", username);
-        if (isLoggedIn) {
-            fetchTasks();
-            navigate('/homepage');
-        }
-    },[isLoggedIn, username, navigate, fetchTasks]);
-
-    const updateTaskList = (updatedTasks) => {
-        setTasks(updatedTasks);
-    };    
-
     const predictTask = async (taskData) => {
         try {
-            const csrfToken = getCsrfToken();
-            const response = await axios.post(`${API_BASE}/api/predict/`, JSON.stringify(taskData), {
-                headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' }
-            });
-            if (response.status === 200) {
-                console.log("Prediction response:", response.data);
-                return response.data;  // Returns prediction data from the server
-            } else {
-                throw new Error('Prediction failed.');
-            }
+            const res = await axios.post(`${API_BASE}/api/predict/`, taskData, { headers: authHeader() });
+            if (res.status === 200) return res.data;
         } catch (error) {
-            console.error("Error in prediction:", error);
-            setAlert({ show: true, message: error.message || "Failed to predict task details", type: 'danger' });
+            setAlert({ show: true, message: error.message || 'Prediction failed', type: 'danger' });
             return null;
         }
     };
 
+    const sendContact = async ({ email, message }) => {
+        try {
+            const res = await axios.post(`${API_BASE}/api/contact/`, { email, message });
+            if (res.status === 200) {
+                setAlert({ show: true, message: 'Message sent successfully!', type: 'success' });
+                return true;
+            }
+        } catch (error) {
+            setAlert({ show: true, message: error.message, type: 'danger' });
+            return false;
+        }
+    };
+
+    // ── Modal toggles ─────────────────────────────────────────────────────
+
+    const toggleLogin  = () => { setModalLogin(v => !v);  setLoginError(''); };
+    const toggleSignup = () => { setModalSignup(v => !v); setLoginError(''); };
+
+    // ── Bootstrap: fetch tasks when token is present ──────────────────────
+
+    useEffect(() => {
+        if (isLoggedIn && token) {
+            fetchTasks();
+        }
+    }, [isLoggedIn, token]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const updateTaskList = (updatedTasks) => setTasks(updatedTasks);
+
     return (
-        <AuthContext.Provider 
-            value={{ 
-                isLoggedIn, 
-                username, 
-                tasks,
-                alert,
-                loginError, 
-                modalLogin, 
-                modalSignup,
-                setTasks,
-                logInUser, 
-                signUpUser, 
-                logOutUser,
-                sendContact,
-                toggleLogin, 
-                toggleSignup,
-                setAlert,
-                createTask,
-                updateTask,
-                deleteTask,
-                fetchTasks,
-                updateTaskList,
-                predictTask
-            }}
-        >
+        <AuthContext.Provider value={{
+            isLoggedIn, username, tasks, alert, loginError,
+            modalLogin, modalSignup,
+            setTasks, setAlert,
+            logInUser, signUpUser, logOutUser,
+            sendContact,
+            toggleLogin, toggleSignup,
+            createTask, updateTask, deleteTask,
+            fetchTasks, updateTaskList, predictTask,
+        }}>
             {children}
         </AuthContext.Provider>
     );
 };
 
 export const useAuth = () => useContext(AuthContext);
-
-
-

@@ -10,15 +10,18 @@ moment.tz.setDefault('America/New_York');
 const localizer = momentLocalizer(moment);
 const today = new Date();
 
-// Motion-inspired category palette
+// Category palette — light bg, colored left border, text always near-black
 const CATEGORY_COLORS = {
-  meeting:  { bg: '#dbeafe', border: '#3b82f6', text: '#1d4ed8' },
-  work:     { bg: '#e0e7ff', border: '#6366f1', text: '#4338ca' },
-  coding:   { bg: '#ede9fe', border: '#8b5cf6', text: '#6d28d9' },
-  workout:  { bg: '#ffedd5', border: '#f97316', text: '#c2410c' },
-  personal: { bg: '#fce7f3', border: '#ec4899', text: '#be185d' },
-  default:  { bg: '#e8f8f2', border: '#28b67e', text: '#1d4c4f' },
+  meeting:  { bg: '#dbeafe', border: '#3b82f6' },
+  work:     { bg: '#e0e7ff', border: '#6366f1' },
+  coding:   { bg: '#ede9fe', border: '#8b5cf6' },
+  workout:  { bg: '#ffedd5', border: '#f97316' },
+  personal: { bg: '#fce7f3', border: '#ec4899' },
+  default:  { bg: '#e8f8f2', border: '#28b67e' },
 };
+
+// Focus block: neutral gray — signals protected / unavailable time
+const FOCUS_BLOCK_COLORS = { bg: '#f1f5f9', border: '#94a3b8' };
 
 const getCategoryColors = (category) => {
   const key = (category || '').toLowerCase();
@@ -36,34 +39,37 @@ const TaskCalendar = ({ tasks }) => {
       const endTime   = new Date(startTime.getTime() + duration * 60000);
       const categoryLabel = task.category?.label || task.category || '';
       return {
-        title:       task.title,
-        start:       startTime,
-        end:         endTime,
-        description: task.description,
-        url:         task.url,
-        address:     task.address,
-        category:    categoryLabel,
-        isComplete:  task.isComplete,
-        allDay:      false,
+        title:          task.is_focus_block ? `🔒 ${task.title}` : task.title,
+        start:          startTime,
+        end:            endTime,
+        description:    task.description,
+        url:            task.url,
+        address:        task.address,
+        category:       categoryLabel,
+        isComplete:     task.isComplete,
+        is_focus_block: task.is_focus_block,
+        allDay:         false,
       };
     });
     setEvents(mappedEvents);
   }, [tasks]);
 
   const eventPropGetter = (event) => {
-    const colors = getCategoryColors(event.category);
+    const colors = event.is_focus_block ? FOCUS_BLOCK_COLORS : getCategoryColors(event.category);
+    const done   = event.isComplete;
     return {
       style: {
-        backgroundColor: event.isComplete ? '#f3f4f6' : colors.bg,
-        borderLeft:      `3px solid ${event.isComplete ? '#d1d5db' : colors.border}`,
-        color:           event.isComplete ? '#9ca3af' : colors.text,
+        backgroundColor: done ? '#f3f4f6' : colors.bg,
+        borderLeft:      `3px solid ${done ? '#d1d5db' : colors.border}`,
+        color:           done ? '#9ca3af' : '#111827',
         borderRadius:    '6px',
         fontSize:        '12px',
         fontWeight:      '500',
         padding:         '2px 6px',
         border:          'none',
         boxShadow:       'none',
-        textDecoration:  event.isComplete ? 'line-through' : 'none',
+        textDecoration:  done ? 'line-through' : 'none',
+        opacity:         event.is_focus_block ? 0.75 : 1,
       },
     };
   };
@@ -76,11 +82,17 @@ const TaskCalendar = ({ tasks }) => {
           <span
             key={key}
             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium capitalize"
-            style={{ backgroundColor: colors.bg, color: colors.text, borderLeft: `3px solid ${colors.border}` }}
+            style={{ backgroundColor: colors.bg, color: '#111827', borderLeft: `3px solid ${colors.border}` }}
           >
             {key}
           </span>
         ))}
+        <span
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+          style={{ backgroundColor: FOCUS_BLOCK_COLORS.bg, color: '#475569', borderLeft: `3px solid ${FOCUS_BLOCK_COLORS.border}` }}
+        >
+          🔒 Focus block
+        </span>
       </div>
 
       <Calendar
